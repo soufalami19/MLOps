@@ -4,11 +4,19 @@ from flask import Flask, request, render_template
 from PIL import Image
 import numpy as np
 import shutil
+import joblib
 
 app = Flask(__name__)
 
 # Load the models
-<TODO>
+
+models = {
+    "Extra Trees": joblib.load('model_et.pkl'),
+    "K-nn": joblib.load('model_knn.pkl'),
+    "Linear Regression": joblib.load('model_lr.pkl'),
+    "Ridge": joblib.load('model_r.pkl')
+}
+
 
 
 def preprocess_image(image_path):
@@ -59,7 +67,11 @@ def upload_file():
             # Make predictions and generate output images
             output_images = {}
             for name, model in models.items():
-                prediction = <TODO>
+                prediction = model.predict([upper_half])[0]
+                if name in ["Extra Trees", "K-nn"]:
+                    prediction = (prediction * 255).astype('uint8')
+                else:
+                    prediction = np.clip(prediction, 0, 255).astype('uint8')
                 print(f"{name} prediction: {prediction}", flush=True)  # Debugging line
 
                 output_images[name] = create_image_from_prediction(upper_half, prediction)
